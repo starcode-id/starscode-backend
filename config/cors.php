@@ -25,10 +25,17 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        'Origin',
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'X-Requested-With',
+        'X-CSRF-Token',
+    ],
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

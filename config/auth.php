@@ -40,9 +40,13 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'api' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ]
     ],
 
-    /*
+    /*mu
     |--------------------------------------------------------------------------
     | User Providers
     |--------------------------------------------------------------------------
@@ -69,6 +73,9 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+    ],
+    'verification' => [
+        'expire' => 1440,
     ],
 
     /*
