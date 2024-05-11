@@ -2,42 +2,29 @@
 
 use Illuminate\Support\Facades\Http;
 
-function getUser($userId)
+function createPremiumAccess($data)
 {
-    $url = env('APP_URL') . '/api/users/' . $userId;
+    $url = env('API_URL') . '/api/my-courses/premium';
     try {
-        $response = Http::timeout(10)->get($url);
+        $response = Http::post($url, $data);
         $data = $response->json();
         $data['http_code'] = $response->getStatusCode();
         return $data;
     } catch (\Throwable $th) {
-        return [
-            'status' => false,
-            'http_code' => 500,
-            'message' => $th->getMessage()
-        ];
+        return $th->getMessage();
     }
 }
-function getUserById($userId = [])
+
+
+function postOrder($params)
 {
-    $url = env('APP_URL') . '/api/users/' . $userId;
+    $url = env('API_URL') . '/api/order';
     try {
-        if (count($userId) === 0) {
-            return [
-                'status' => false,
-                'http_code' => 200,
-                'data' => [],
-            ];
-        }
-        $response = Http::timeout(10)->get($url, ['user_id' => $userId]);
+        $response = Http::post($url, $params);
         $data = $response->json();
         $data['http_code'] = $response->getStatusCode();
         return $data;
     } catch (\Throwable $th) {
-        return [
-            'status' => false,
-            'http_code' => 500,
-            'message' => $th->getMessage()
-        ];
+        return $th->getMessage();
     }
 }
