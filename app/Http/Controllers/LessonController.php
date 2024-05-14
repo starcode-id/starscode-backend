@@ -38,26 +38,31 @@ class LessonController extends Controller
     }
     public function  create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             "name" => "required|string|max:255",
             "video_url" => "required|string|max:255",
-            "chapter_id" => "required|integer",
-        ]);
+            "chapter_id" => "required|integer|exists:chapters,id",
+        ];
+        $messages = [
+            "name.required" => "name is required",
+            "name.string" => "name must be a string",
+            "name.max" => "name must be less than 255 characters",
+            "video_url.required" => "video url is required",
+            "video_url.string" => "video url must be a string",
+            "video_url.max" => "video url must be less than 255 characters",
+            "chapter_id.required" => "chapter id is required",
+            "chapter_id.integer" => "chapter id must be an integer",
+            "chapter_id.exists" => "chapter not found",
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 "success" => false,
                 "message" => $validator->errors()
             ]);
         }
-        $data = $request->all();
-        $chapterId = $request->input('chapter_id');
-        $chapter = Chapter::find($chapterId);
-        if (!$chapter) {
-            return response()->json([
-                "success" => false,
-                "message" => "chapter not found"
-            ], 404);
-        }
+
         $lesson = Lesson::create($data);
         return response()->json([
             "success" => true,
@@ -66,11 +71,21 @@ class LessonController extends Controller
     }
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             "name" => "string|max:255",
             "video_url" => "string|max:255",
-            "chapter_id" => "integer",
-        ]);
+            "chapter_id" => "integer|exists:chapters,id|required",
+        ];
+        $messages = [
+            "name.string" => "name must be a string",
+            "name.max" => "name must be less than 255 characters",
+            "video_url.string" => "video url must be a string",
+            "video_url.max" => "video url must be less than 255 characters",
+            "chapter_id.integer" => "chapter id must be an integer",
+            "chapter_id.exists" => "chapter not found",
+        ];
+        $data = request()->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 "success" => false,
@@ -83,14 +98,6 @@ class LessonController extends Controller
             return response()->json([
                 "success" => false,
                 "message" => "lesson not found"
-            ], 404);
-        }
-        $chapterId = $request->input('chapter_id');
-        $chapter = Chapter::find($chapterId);
-        if (!$chapter) {
-            return response()->json([
-                "success" => false,
-                "message" => "chapter not found"
             ], 404);
         }
         $lesson->fill($data);

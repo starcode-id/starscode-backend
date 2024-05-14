@@ -34,12 +34,24 @@ class MentorController extends Controller
     }
     public function create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'name' => 'required|string|max:255',
             'profile' => 'required|url',
             'profession' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
-        ]);
+            'email' => 'required|string|email:dns|max:255',
+        ];
+        $messages = [
+            'name.required' => 'Name is required',
+            'name.max' => 'Name is too long',
+            'profile.required' => 'Profile is required',
+            'profile.url' => 'Profile is not a valid URL',
+            'profession.required' => 'Profession is required',
+            'profession.max' => 'Profession is too long',
+            'email.required' => 'Email is required',
+            'email.email' => 'Email is not a valid email',
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -56,12 +68,20 @@ class MentorController extends Controller
     }
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'name' => 'string|max:255',
             'profile' => 'url',
             'profession' => 'string|max:255',
-            'email' => 'string|email|max:255',
-        ]);
+            'email' => 'string|email:dns|max:255',
+        ];
+        $messages = [
+            'name.max' => 'Name is too long',
+            'profile.url' => 'Profile is not a valid URL',
+            'profession.max' => 'Profession is too long',
+            'email.email' => 'Email is not a valid email',
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,

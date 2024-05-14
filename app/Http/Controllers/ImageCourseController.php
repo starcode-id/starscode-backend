@@ -11,24 +11,23 @@ class ImageCourseController extends Controller
 {
     public function create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            "course_id" => "required|integer",
+        $rules = [
             "image" => "required|url",
-        ]);
+            "course_id" => "required|integer|exists:courses,id",
+        ];
+        $messages = [
+            'image.required' => 'The image field is required.',
+            'image.url' => 'The image must be a valid URL.',
+            'course_id.required' => 'The course field is required.',
+            'course_id.exists' => 'The course is not found.',
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 "success" => false,
                 "message" => $validator->errors()
             ]);
-        }
-        $data = $request->all();
-        $courseId = $request->input("course_id");
-        $course = Course::find($courseId);
-        if (!$course) {
-            return response()->json([
-                "success" => false,
-                "message" => "Course not found"
-            ], 404);
         }
         $ImageCourse = ImageCourse::create($data);
         return response()->json([

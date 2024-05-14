@@ -26,33 +26,33 @@ class MyCourseController extends Controller
     }
     public function create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            "course_id" => "required|integer",
-            "user_id" => "required|integer",
-        ]);
+        $rules = [
+            "course_id" => "required|integer|exists:courses,id",
+            "user_id" => "required|integer|exists:users,id",
+        ];
+        $messages = [
+            "course_id.required" => "course_id is required",
+            "course_id.integer" => "course_id must be an integer",
+            "course_id.exists" => "course not found",
+            "user_id.required" => "user_id is required",
+            "user_id.integer" => "user_id must be an integer",
+            "user_id.exists" => "user not found",
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 "status" => false,
                 "message" => $validator->errors(),
             ]);
         }
-        $data = $request->all();
+
         $courseId = $request->input('course_id');
         $course = Course::find($courseId);
-        if (!$course) {
-            return response()->json([
-                "status" => false,
-                "message" => "course not found",
-            ], 404);
-        }
+
         $userId = $request->input('user_id');
         $user = User::find($userId);
-        if (!$user) {
-            return response()->json([
-                "status" => false,
-                "message" => "user not found",
-            ], 404);
-        }
+
         $isExistMyCourse = MyCourse::where('course_id', $courseId)->where('user_id', $userId)->exists();
         if ($isExistMyCourse) {
             return response()->json([

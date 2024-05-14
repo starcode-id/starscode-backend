@@ -74,17 +74,38 @@ class CourseController extends Controller
     }
     public function create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'name' => 'required|string|max:255',
             'certificate' => 'required|boolean',
             'thumbnail' => 'string|url',
             'type' => 'required|in:free,premium',
             'status' => 'required|in:draft,published',
-            'price' => 'integer',
+            'price' => 'integer|required_if:type,premium',
             'level' => 'required|in:all-level,beginner,intermediate,advance',
             'description' => 'string',
-            'mentor_id' => 'required|integer',
-        ]);
+            'mentor_id' => 'required|integer|exists:mentors,id',
+        ];
+        $messages = [
+            'name.required' => 'Course name is required',
+            'name.string' => 'Course name must be a string',
+            'name.max' => 'Course name must be less than 255 characters',
+            'certificate.required' => 'Certificate is required',
+            'certificate.boolean' => 'Certificate must be a boolean',
+            'thumbnail.string' => 'Thumbnail must be a string',
+            'thumbnail.url' => 'Thumbnail must be a valid URL',
+            'type.required' => 'Type is required',
+            'type.in' => 'Type must be free or premium',
+            'status.required' => 'Status is required',
+            'status.in' => 'Status must be draft or published',
+            'price.required_if' => 'price can not be empty if type is premium',
+            'level.in' => 'Level must be all-level, beginner, intermediate, or advance',
+            'level.required' => 'Level is required',
+            'mentor_id.required' => 'Mentor is required',
+            'mentor_id.exists' => 'Mentor not found',
+
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -92,17 +113,6 @@ class CourseController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-        $data = $request->all();
-        $mentorId =  $request->input('mentor_id');
-        $mentor = Mentor::find($mentorId);
-
-        if (!$mentor) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Mentor not found'
-            ], 404);
-        }
-
         $course = Course::create($data);
         return response()->json([
             'status' => true,
@@ -111,17 +121,32 @@ class CourseController extends Controller
     }
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'name' => 'string|max:255',
             'certificate' => 'boolean',
             'thumbnail' => 'string|url',
             'type' => 'in:free,premium',
             'status' => 'in:draft,published',
-            'price' => 'integer',
+            'price' => 'integer|required_if:type,premium',
             'level' => 'in:all-level,beginner,intermediate,advance',
             'description' => 'string',
-            'mentor_id' => 'integer',
-        ]);
+            'mentor_id' => 'integer|exists:mentors,id|required',
+        ];
+        $messages = [
+            'name.string' => 'Course name must be a string',
+            'name.max' => 'Course name must be less than 255 characters',
+            'certificate.boolean' => 'Certificate must be a boolean',
+            'thumbnail.string' => 'Thumbnail must be a string',
+            'thumbnail.url' => 'Thumbnail must be a valid URL',
+            'type.in' => 'Type must be free or premium',
+            'status.in' => 'Status must be draft or published',
+            'price.required_if' => 'price can not be empty if type is premium',
+            'level.in' => 'Level must be all-level, beginner, intermediate, or advance',
+            'mentor_id.exists' => 'Mentor not found',
+            'mentor_id.required' => 'Mentor is required',
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -136,15 +161,6 @@ class CourseController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Course not found'
-            ], 404);
-        }
-        $mentorId =  $request->input('mentor_id');
-        $mentor = Mentor::find($mentorId);
-
-        if (!$mentor) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Mentor not found'
             ], 404);
         }
         $course->fill($data);

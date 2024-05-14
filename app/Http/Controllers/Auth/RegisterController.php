@@ -12,18 +12,32 @@ class RegisterController extends Controller
 {
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => "required|string|max:255",
-            "email" => "required|string|email:dns|unique:users",
-            'password' => 'required|min:8|max:255|string',
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email:dns|unique:users',
+            'password' => 'required|min:8|max:20|string',
             'avatar' => 'base64image',
             'role' => 'string|max:255',
             'profession' => 'string|max:255'
-        ]);
+        ];
+        $messages = [
+            'name.required' => 'Name is required',
+            'name.max' => 'Name must not exceed 255 characters',
+            'email.required' => 'Email is required',
+            'email.unique' => 'Email already exists',
+            'email.email' => 'Email is not valid',
+            'password.required' => 'Password is required',
+            'password.min' => 'Password must be at least 8 characters',
+            'password.max' => 'Password must not exceed 20 characters',
+            'profession.max' => 'Profession must not exceed 255 characters',
+            'avatar.base64image' => 'Avatar must be an image',
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => $validator->errors()->first(),
+                'message' => $validator->errors(),
             ]);
         }
         $user = User::create([
@@ -34,7 +48,9 @@ class RegisterController extends Controller
             'role' => $request->role,
             'password' => Hash::make($request->password),
         ]);
-        $token = $user->createToken('auth_token', ['*'], now()->addWeek())->plainTextToken;
+
+
+        // $token = $user->createToken('auth_token', ['*'], now()->addWeek())->plainTextToken;
         return response()->json([
             'status' => true,
             'message' => 'create user successfully',

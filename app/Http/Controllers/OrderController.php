@@ -24,7 +24,19 @@ class OrderController extends Controller
     {
         $user = $request->input('user');
         $course = $request->input('course');
+        $rules = [
+            'user_id' => 'required|exists:users,id',
+            'course_id' => 'required|exists:courses,id',
+        ];
+        $messages = [
+            'user_id.exists' => 'User not found',
+            'user_id.required' => 'User id is required',
+            'course_id.exists' => 'Course not found',
+            'course_id.required' => 'Course id is required',
 
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         $order = Order::create([
             'user_id' => $user['id'],
             'course_id' => $course['id'],

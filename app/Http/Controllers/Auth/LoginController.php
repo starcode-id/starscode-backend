@@ -12,10 +12,20 @@ class LoginController extends Controller
 {
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => "required|string|email:dns|max:255",
-            'password' => 'required|min:8|max:255|string',
-        ]);
+        $rules = [
+            'email' => "required|string|email:dns|max:255|exists:users,email",
+            'password' => 'required|min:8|max:20|string',
+        ];
+        $messages = [
+            'email.required' => 'Email is required',
+            'email.email' => 'Email is not valid',
+            'email.exists' => 'Email not found',
+            'password.required' => 'Password is required',
+            'password.min' => 'Password must be at least 8 characters',
+            'password.max' => 'Password must be less than 20 characters',
+        ];
+        $data = $request->all();
+        $validator = validator($data, $rules, $messages);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -23,12 +33,7 @@ class LoginController extends Controller
             ]);
         }
         $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'email not found'
-            ]);
-        }
+
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'status' => false,
