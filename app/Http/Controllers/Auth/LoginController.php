@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class LoginController extends Controller
 {
@@ -29,7 +30,7 @@ class LoginController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => $validator->errors()->first(),
+                'message' => $validator->errors(),
             ]);
         }
         $user = User::where('email', $request->email)->first();
@@ -40,11 +41,15 @@ class LoginController extends Controller
                 'message' => 'Email or Password in corect'
             ]);
         }
-        $token = $user->createToken('auth_token', ['*'], now()->addWeek())->plainTextToken;
+        // Check if token already exists
+        $existingToken = PersonalAccessToken::updateOrCreate(
+            ['tokenable_id' => $user->id],
+            ['token' => $user->createToken('auth_token', ['*'], now()->addWeek())->plainTextToken]
+        );
         return response()->json([
             'status' => true,
             'data' => $user,
-            'token' => $token,
+            'token' => $existingToken->token,
             'token_type' => 'Bearer'
         ]);
     }

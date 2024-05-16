@@ -104,7 +104,7 @@ class UserController extends Controller
             'name' => $user->name,
             'profession' => $user->profession,
             'role' => $user->role,
-            'avatar' => $user->avatar
+            'avatar' => $user->avatar,
         ];
         return response()->json([
             "status" => true,
